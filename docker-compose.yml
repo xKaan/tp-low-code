@@ -9,6 +9,31 @@ services:
       - TZ=Europe/Paris
     volumes:
       - n8n_data:/home/node/.n8n
+    depends_on:
+      - mail
+
+  mail:
+    image: greenmail/standalone:latest
+    restart: unless-stopped
+    environment:
+      - GREENMAIL_OPTS=-Dgreenmail.setup.test.smtp -Dgreenmail.setup.test.imap -Dgreenmail.hostname=0.0.0.0 -Dgreenmail.auth.disabled -Dgreenmail.verbose
+    ports:
+      - "3025:3025" # SMTP
+      - "3143:3143" # IMAP
+
+  webmail:
+    image: roundcube/roundcubemail:latest
+    restart: unless-stopped
+    environment:
+      - ROUNDCUBEMAIL_DEFAULT_HOST=mail
+      - ROUNDCUBEMAIL_DEFAULT_PORT=3143
+      - ROUNDCUBEMAIL_SMTP_SERVER=mail
+      - ROUNDCUBEMAIL_SMTP_PORT=3025
+      - ROUNDCUBEMAIL_DB_TYPE=sqlite
+    ports:
+      - "8025:80"
+    depends_on:
+      - mail
 
 volumes:
   n8n_data:
