@@ -43,10 +43,11 @@
         "table": "Clients",
         "returnAll": false,
         "limit": 1,
-        "options": {
-          "filterByFormula": "={{ \"{Domaine email} = '\" + $json.domaine + \"'\" }}"
+        "additionalOptions": {
+          "filterByFormula": "={{ \"LOWER({Domaine email}) = '\" + $json.domaine + \"'\" }}"
         }
       },
+      "alwaysOutputData": true,
       "credentials": {
         "airtableTokenApi": { "id": "2", "name": "Airtable - TechDistri (PAT)" }
       }

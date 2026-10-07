@@ -11,9 +11,9 @@ SMTP_HOST, SMTP_PORT = "localhost", 3025
 DESTINATAIRE = "demo@techdistri.local"
 
 MAILS = {
-    1: ("jean.dupont@carrasco.fr", "Demande de devis vérins hydrauliques"),
+    1: ("jean.dupont@carrasco-indus.test", "Demande de devis vérins hydrauliques"),
     2: ("contact@meca-nord.fr", "Commande n°4521"),
-    3: ("marie.dupont@carrasco.fr", "Relance devis vérins"),
+    3: ("marie.dupont@carrasco-indus.test", "Relance devis vérins"),
     4: ("contact@meca-nord.fr", "Bon de livraison BL-9081"),
     5: ("achats@dupont-outillage.fr", "Réclamation commande n°4498"),
 }
