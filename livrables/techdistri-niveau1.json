@@ -3,13 +3,14 @@
   "nodes": [
     {
       "id": "1",
-      "name": "IMAP - Nouveau Mail",
+      "name": "IMAP - Mails entrants",
       "type": "n8n-nodes-base.emailReadImap",
       "typeVersion": 1,
       "position": [240, 300],
       "parameters": {
         "mailbox": "INBOX",
         "postProcessAction": "read",
+        "format": "resolved",
         "options": {},
         "pollTimes": {
           "item": [
@@ -28,7 +29,7 @@
       "typeVersion": 2,
       "position": [460, 300],
       "parameters": {
-        "jsCode": "const items = $input.all();\nreturn items.map((item) => {\n  const fromRaw = item.json.from;\n  let emailAddress = '';\n  if (fromRaw && typeof fromRaw === 'object' && fromRaw.value && fromRaw.value[0]) {\n    emailAddress = fromRaw.value[0].address || '';\n  } else if (typeof fromRaw === 'string') {\n    emailAddress = fromRaw;\n  }\n  emailAddress = emailAddress.trim().toLowerCase();\n\n  const atIndex = emailAddress.lastIndexOf('@');\n  const domaine = atIndex > -1 && atIndex < emailAddress.length - 1\n    ? emailAddress.slice(atIndex + 1)\n    : 'inconnu';\n\n  return {\n    json: {\n      expediteur: emailAddress || 'inconnu@inconnu.local',\n      domaine,\n      sujet: item.json.subject || '(sans sujet)',\n      date: item.json.date || new Date().toISOString(),\n      corps: item.json.textPlain || item.json.text || '',\n      messageId: item.json.messageId || item.json['message-id'] || '',\n    },\n  };\n});"
+        "jsCode": "const items = $input.all();\nreturn items.map((item) => {\n  const fromRaw = item.json.from;\n  let emailAddress = '';\n  if (fromRaw && typeof fromRaw === 'object' && fromRaw.value && fromRaw.value[0]) {\n    emailAddress = fromRaw.value[0].address || '';\n  } else if (typeof fromRaw === 'string') {\n    // \"Nom Prénom <adresse@domaine>\" : on ne garde que l'adresse\n    const match = fromRaw.match(/<([^>]+)>/);\n    emailAddress = match ? match[1] : fromRaw;\n  }\n  emailAddress = emailAddress.trim().toLowerCase();\n\n  const atIndex = emailAddress.lastIndexOf('@');\n  const domaine = atIndex > -1 && atIndex < emailAddress.length - 1\n    ? emailAddress.slice(atIndex + 1)\n    : 'inconnu';\n\n  return {\n    json: {\n      expediteur: emailAddress || 'inconnu@inconnu.local',\n      domaine,\n      sujet: item.json.subject || '(sans sujet)',\n      date: item.json.date || new Date().toISOString(),\n      corps: item.json.textPlain || item.json.text || '',\n      messageId: item.json.messageId || item.json['message-id'] || '',\n    },\n  };\n});"
       }
     },
     {
@@ -59,7 +60,7 @@
       "typeVersion": 2,
       "position": [900, 300],
       "parameters": {
-        "jsCode": "const searchResults = $input.all();\nconst emailData = $('Extraire Champs Email').first().json;\n\nif (searchResults.length > 0 && searchResults[0].json.id) {\n  return [{\n    json: {\n      clientId: searchResults[0].json.id,\n      isNew: false,\n      domaine: emailData.domaine,\n    },\n  }];\n}\n\nreturn [{\n  json: {\n    clientId: null,\n    isNew: true,\n    domaine: emailData.domaine,\n  },\n}];"
+        "jsCode": "const searchResults = $input.all();\nconst emailData = $('Un mail à la fois').first().json;\n\nif (searchResults.length > 0 && searchResults[0].json.id) {\n  return [{\n    json: {\n      clientId: searchResults[0].json.id,\n      isNew: false,\n      domaine: emailData.domaine,\n    },\n  }];\n}\n\nreturn [{\n  json: {\n    clientId: null,\n    isNew: true,\n    domaine: emailData.domaine,\n  },\n}];"
       }
     },
     {
@@ -83,7 +84,7 @@
       "typeVersion": 2,
       "position": [1340, 180],
       "parameters": {
-        "jsCode": "const emailData = $('Extraire Champs Email').first().json;\nreturn [{\n  json: {\n    'Nom': emailData.domaine,\n    'Domaine email': emailData.domaine,\n    'Date création': new Date().toISOString(),\n  },\n}];"
+        "jsCode": "const emailData = $('Un mail à la fois').first().json;\nreturn [{\n  json: {\n    'Nom': emailData.domaine,\n    'Domaine email': emailData.domaine,\n    'Date création': new Date().toISOString(),\n  },\n}];"
       }
     },
     {
@@ -110,7 +111,7 @@
       "typeVersion": 2,
       "position": [1780, 180],
       "parameters": {
-        "jsCode": "const created = $input.first().json;\nconst emailData = $('Extraire Champs Email').first().json;\nreturn [{\n  json: {\n    clientId: created.id,\n    domaine: emailData.domaine,\n  },\n}];"
+        "jsCode": "const created = $input.first().json;\nconst emailData = $('Un mail à la fois').first().json;\nreturn [{\n  json: {\n    clientId: created.id,\n    domaine: emailData.domaine,\n  },\n}];"
       }
     },
     {
@@ -120,7 +121,7 @@
       "typeVersion": 2,
       "position": [2000, 300],
       "parameters": {
-        "jsCode": "const clientInfo = $input.first().json;\nconst emailData = $('Extraire Champs Email').first().json;\n\nreturn [{\n  json: {\n    'Sujet': emailData.sujet,\n    'Expéditeur': emailData.expediteur,\n    'Date': emailData.date,\n    'Corps': emailData.corps,\n    'Message-ID': emailData.messageId,\n    'Statut traitement': 'Nouveau',\n    'Client': [clientInfo.clientId],\n  },\n}];"
+        "jsCode": "const clientInfo = $input.first().json;\nconst emailData = $('Un mail à la fois').first().json;\n\nreturn [{\n  json: {\n    'Sujet': emailData.sujet,\n    'Expéditeur': emailData.expediteur,\n    'Date': emailData.date,\n    'Corps': emailData.corps,\n    'Message-ID': emailData.messageId,\n    'Statut traitement': 'Nouveau',\n    'Client': [clientInfo.clientId],\n  },\n}];"
       }
     },
     {
@@ -139,14 +140,31 @@
       "credentials": {
         "airtableTokenApi": { "id": "2", "name": "Airtable - TechDistri (PAT)" }
       }
+    },
+    {
+      "id": "11",
+      "name": "Un mail à la fois",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [570, 480],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
     }
   ],
   "connections": {
-    "IMAP - Nouveau Mail": {
+    "IMAP - Mails entrants": {
       "main": [[{ "node": "Extraire Champs Email", "type": "main", "index": 0 }]]
     },
     "Extraire Champs Email": {
-      "main": [[{ "node": "Airtable - Rechercher Client", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "Un mail à la fois", "type": "main", "index": 0 }]]
+    },
+    "Un mail à la fois": {
+      "main": [
+        [],
+        [{ "node": "Airtable - Rechercher Client", "type": "main", "index": 0 }]
+      ]
     },
     "Airtable - Rechercher Client": {
       "main": [[{ "node": "Vérifier Client Trouvé", "type": "main", "index": 0 }]]
@@ -171,6 +189,9 @@
     },
     "Préparer Données Mail": {
       "main": [[{ "node": "Airtable - Créer Fiche Mail", "type": "main", "index": 0 }]]
+    },
+    "Airtable - Créer Fiche Mail": {
+      "main": [[{ "node": "Un mail à la fois", "type": "main", "index": 0 }]]
     }
   },
   "active": false,
