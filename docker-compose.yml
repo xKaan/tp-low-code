@@ -7,6 +7,9 @@ services:
     environment:
       - GENERIC_TIMEZONE=Europe/Paris
       - TZ=Europe/Paris
+      # Une exécution à la fois : sinon deux mails d'un même nouveau domaine
+      # arrivés ensemble créent chacun le Client (doublon)
+      - N8N_CONCURRENCY_PRODUCTION_LIMIT=1
     volumes:
       - n8n_data:/home/node/.n8n
     depends_on:
