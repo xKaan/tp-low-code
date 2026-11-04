@@ -12,12 +12,13 @@ vers le cloud et formules de synthèse en cascade dans la table `Clients`.
 - [`livrables/test-plan.md`](livrables/test-plan.md) — jeu de test niveau 1
 - [`livrables/test-plan-niveau2.md`](livrables/test-plan-niveau2.md) — jeu de test niveau 2 (PJ, erreurs)
 - [`livrables/dashboard.md`](livrables/dashboard.md) — vues de consultation
+- [`livrables/tuto-google-drive.md`](livrables/tuto-google-drive.md) — tuto de configuration Google Drive (OAuth, dossier racine)
 
 ## Mise en service
 
 1. **n8n + serveur mail de test** : `docker compose up -d` → n8n sur [http://localhost:5678](http://localhost:5678)
 2. **Airtable** : créer les tables selon [`livrables/airtable-schema.md`](livrables/airtable-schema.md) (ordre important : `Clients` → `Mails` → `Fichiers`, puis ajouter les champs Count/Rollup une fois les liens en place), récupérer l'ID de la base et un Personal Access Token (scopes `data.records:read/write`)
-3. **Google Drive** : créer un dossier racine dédié (ex. `TechDistri - Pièces jointes`), noter son ID (dans l'URL du dossier), créer une credential OAuth2 Google Drive dans n8n (scope `drive.file` suffit)
+3. **Google Drive** : créer un dossier racine dédié (ex. `TechDistri - Pièces jointes`), noter son ID (dans l'URL du dossier), créer une credential OAuth2 Google Drive dans n8n — pas à pas dans [`livrables/tuto-google-drive.md`](livrables/tuto-google-drive.md)
 4. **Import** : n8n → Import from File → `livrables/techdistri-niveau2.json`
 5. **Config** : renseigner les credentials IMAP, Airtable, Google Drive et SMTP (voir ci-dessous) sur les nœuds correspondants, remplacer `__AIRTABLE_BASE_ID__` et `__GDRIVE_ROOT_FOLDER_ID__` par les valeurs réelles
 6. **Activer** le workflow
