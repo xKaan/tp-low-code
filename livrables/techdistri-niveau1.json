@@ -39,6 +39,7 @@
       "typeVersion": 1,
       "position": [680, 300],
       "parameters": {
+        "authentication": "airtableTokenApi",
         "operation": "list",
         "application": "__AIRTABLE_BASE_ID__",
         "table": "Clients",
@@ -94,6 +95,7 @@
       "typeVersion": 1,
       "position": [1560, 180],
       "parameters": {
+        "authentication": "airtableTokenApi",
         "operation": "append",
         "application": "__AIRTABLE_BASE_ID__",
         "table": "Clients",
@@ -131,6 +133,7 @@
       "typeVersion": 1,
       "position": [2220, 300],
       "parameters": {
+        "authentication": "airtableTokenApi",
         "operation": "append",
         "application": "__AIRTABLE_BASE_ID__",
         "table": "Mails",
