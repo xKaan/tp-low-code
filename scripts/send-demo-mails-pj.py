@@ -12,6 +12,7 @@ import struct
 import sys
 import zlib
 from email.message import EmailMessage
+from email.utils import make_msgid
 
 SMTP_HOST, SMTP_PORT = "localhost", 3025
 DESTINATAIRE = "demo@techdistri.local"
@@ -106,6 +107,7 @@ with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as smtp:
         msg["From"] = expediteur
         msg["To"] = DESTINATAIRE
         msg["Subject"] = sujet
+        msg["Message-ID"] = make_msgid(domain="techdistri.test")
         msg.set_content(corps)
         for nom, mime, contenu in pieces:
             principal, secondaire = mime.split("/")

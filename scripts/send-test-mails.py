@@ -6,6 +6,7 @@ Usage : python3 scripts/send-test-mails.py [numéros...]   (ex : 1 2, défaut : 
 import smtplib
 import sys
 from email.message import EmailMessage
+from email.utils import make_msgid
 
 SMTP_HOST, SMTP_PORT = "localhost", 3025
 DESTINATAIRE = "demo@techdistri.local"
@@ -27,6 +28,7 @@ with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as smtp:
         msg["From"] = expediteur
         msg["To"] = DESTINATAIRE
         msg["Subject"] = sujet
+        msg["Message-ID"] = make_msgid(domain="techdistri.test")
         msg.set_content(f"Bonjour,\n\nCeci est l'email de test #{n}.\n\nCordialement,\n{expediteur}")
         smtp.send_message(msg)
         print(f"#{n} envoyé : {expediteur} → {sujet}")
