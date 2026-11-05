@@ -26,6 +26,17 @@ vers le cloud et formules de synthèse en cascade dans la table `Clients`.
 7. **Tester** avec [`livrables/test-plan.md`](livrables/test-plan.md) puis [`livrables/test-plan-niveau2.md`](livrables/test-plan-niveau2.md)
 8. **Consulter** via les vues décrites dans [`livrables/dashboard.md`](livrables/dashboard.md)
 
+## Déduplication
+
+Chaque mail est d'abord recherché dans `Mails` par son `Message-ID`
+(nœuds `Airtable - Rechercher Mail Existant` → `Vérifier Doublon` →
+`Mail Déjà Traité ?`). S'il existe déjà, le workflow passe au mail suivant
+sans rien recréer : relancer le workflow, remettre un mail en non lu ou
+avoir deux exécutions qui se chevauchent ne crée pas de doublon. Côté
+clients, l'adresse est toujours extraite des `<...>` et le domaine est
+nettoyé de tout caractère invalide, pour éviter les clients fantômes du
+type `domaine.test>`.
+
 ## Gestion d'erreurs
 
 Le nœud `Drive - Upload Fichier` retente 3 fois (`retryOnFail`, 2 s entre

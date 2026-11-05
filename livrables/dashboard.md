@@ -12,7 +12,7 @@ lecture, partagées en lien public "en lecture seule"), pas de nouvel outil
 
 - Tri : `Dernier échange` décroissant (les clients les plus récemment actifs
   en haut)
-- Colonnes visibles, dans l'ordre : `Nom`, `Domaine email`, `Nb mails`,
+- Colonnes visibles, dans l'ordre : `Nom`, `Domaine email`, `Nombre d'emails`,
   `Nb fichiers`, `Dernier échange`, `Contact principal`
 - Filtre : aucun (vue globale) — sert de point d'entrée "quel client a
   bougé récemment, combien de documents lui sont rattachés"

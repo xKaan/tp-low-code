@@ -7,7 +7,7 @@ dossier, fiche Fichier, formules en cascade, gestion d'erreurs.
 ## Pré-requis avant de tester
 
 1. Table `Fichiers` créée selon [`airtable-schema.md`](airtable-schema.md),
-   avec les champs cascade (`Nb fichiers` sur `Mails`, `Nb mails` /
+   avec les champs cascade (`Nb fichiers` sur `Mails`, `Nombre d'emails` /
    `Dernier échange` / `Nb fichiers` sur `Clients`).
 2. Workflow [`techdistri-niveau2.json`](techdistri-niveau2.json) importé,
    credentials Airtable + IMAP + Google Drive + SMTP configurées, `__AIRTABLE_BASE_ID__`
@@ -46,7 +46,7 @@ contenant les fichiers du bon client, pas de mélange entre dossiers.
 respectivement.
 
 **Table `Clients`** : pour chacun des 3 clients avec PJ, `Nb fichiers`
-cascade correctement depuis `Mails.Nb fichiers` ; `Nb mails` et
+cascade correctement depuis `Mails.Nb fichiers` ; `Nombre d'emails` et
 `Dernier échange` se mettent à jour pour les 4 clients (y compris Carrasco
 qui n'a pas de PJ mais a bien 1 mail de plus).
 
@@ -84,7 +84,7 @@ Le brief demande explicitement : *"que se passe-t-il si l'upload cloud
    est bien accessible.
 3. Envoyer `5pj` : montrer les 5 fiches Fichier créées d'un coup.
 4. Montrer la vue `Dashboard Clients` ([`dashboard.md`](dashboard.md)) :
-   `Nb mails` / `Nb fichiers` / `Dernier échange` à jour sans action
+   `Nombre d'emails` / `Nb fichiers` / `Dernier échange` à jour sans action
    manuelle.
 5. Dérouler le scénario d'échec ci-dessus pour montrer la gestion d'erreurs.
 

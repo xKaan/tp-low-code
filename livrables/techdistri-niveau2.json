@@ -14,12 +14,19 @@
         "options": {},
         "pollTimes": {
           "item": [
-            { "mode": "everyX", "unit": "minutes", "value": 5 }
+            {
+              "mode": "everyX",
+              "unit": "minutes",
+              "value": 5
+            }
           ]
         }
       },
       "credentials": {
-        "imap": { "id": "1", "name": "Gmail IMAP - Boîte Test TechDistri" }
+        "imap": {
+          "id": "1",
+          "name": "Gmail IMAP - Boîte Test TechDistri"
+        }
       }
     },
     {
@@ -29,7 +36,7 @@
       "typeVersion": 2,
       "position": [460, 300],
       "parameters": {
-        "jsCode": "const items = $input.all();\nreturn items.map((item) => {\n  const fromRaw = item.json.from;\n  let emailAddress = '';\n  if (fromRaw && typeof fromRaw === 'object' && fromRaw.value && fromRaw.value[0]) {\n    emailAddress = fromRaw.value[0].address || '';\n  } else if (typeof fromRaw === 'string') {\n    // \"Nom Prénom <adresse@domaine>\" : on ne garde que l'adresse\n    const match = fromRaw.match(/<([^>]+)>/);\n    emailAddress = match ? match[1] : fromRaw;\n  }\n  emailAddress = emailAddress.trim().toLowerCase();\n\n  const atIndex = emailAddress.lastIndexOf('@');\n  const domaine = atIndex > -1 && atIndex < emailAddress.length - 1\n    ? emailAddress.slice(atIndex + 1)\n    : 'inconnu';\n\n  return {\n    json: {\n      expediteur: emailAddress || 'inconnu@inconnu.local',\n      domaine,\n      sujet: item.json.subject || '(sans sujet)',\n      date: item.json.date || new Date().toISOString(),\n      corps: item.json.textPlain || item.json.text || '',\n      messageId: item.json.messageId || item.json['message-id'] || '',\n    },\n    // les pièces jointes suivent le mail dans la boucle\n    binary: item.binary,\n  };\n});"
+        "jsCode": "const items = $input.all();\nreturn items.map((item) => {\n  const fromRaw = item.json.from;\n  let emailAddress = '';\n  if (fromRaw && typeof fromRaw === 'object' && fromRaw.value && fromRaw.value[0]) {\n    emailAddress = fromRaw.value[0].address || '';\n  } else if (typeof fromRaw === 'string') {\n    const match = fromRaw.match(/<([^>]+)>/);\n    emailAddress = match ? match[1] : fromRaw;\n  }\n  const bracketed = emailAddress.match(/<([^>]+)>/);\n  if (bracketed) emailAddress = bracketed[1];\n  emailAddress = emailAddress.trim().toLowerCase();\n\n  const atIndex = emailAddress.lastIndexOf('@');\n  const domaine = atIndex > -1 && atIndex < emailAddress.length - 1\n    ? emailAddress.slice(atIndex + 1).replace(/[^a-z0-9.-]/g, '') || 'inconnu'\n    : 'inconnu';\n\n  return {\n    json: {\n      expediteur: emailAddress || 'inconnu@inconnu.local',\n      domaine,\n      sujet: item.json.subject || '(sans sujet)',\n      date: item.json.date || new Date().toISOString(),\n      corps: item.json.textPlain || item.json.text || '',\n      messageId: item.json.messageId || item.json['message-id'] || '',\n    },\n    binary: item.binary,\n  };\n});"
       }
     },
     {
@@ -37,7 +44,7 @@
       "name": "Airtable - Rechercher Client",
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 1,
-      "position": [680, 300],
+      "position": [1340, 300],
       "parameters": {
         "authentication": "airtableTokenApi",
         "operation": "list",
@@ -46,12 +53,15 @@
         "returnAll": false,
         "limit": 1,
         "additionalOptions": {
-          "filterByFormula": "={{ \"LOWER({Domaine email}) = '\" + $json.domaine + \"'\" }}"
+          "filterByFormula": "={{ \"LOWER({Domaine email}) = '\" + $('Un mail à la fois').first().json.domaine.replace(/'/g, '') + \"'\" }}"
         }
       },
       "alwaysOutputData": true,
       "credentials": {
-        "airtableTokenApi": { "id": "2", "name": "Airtable - TechDistri (PAT)" }
+        "airtableTokenApi": {
+          "id": "2",
+          "name": "Airtable - TechDistri (PAT)"
+        }
       }
     },
     {
@@ -59,7 +69,7 @@
       "name": "Vérifier Client Trouvé",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [900, 300],
+      "position": [1560, 300],
       "parameters": {
         "jsCode": "const searchResults = $input.all();\nconst emailData = $('Un mail à la fois').first().json;\n\nif (searchResults.length > 0 && searchResults[0].json.id) {\n  return [{\n    json: {\n      clientId: searchResults[0].json.id,\n      isNew: false,\n      domaine: emailData.domaine,\n    },\n  }];\n}\n\nreturn [{\n  json: {\n    clientId: null,\n    isNew: true,\n    domaine: emailData.domaine,\n  },\n}];"
       }
@@ -69,11 +79,14 @@
       "name": "Client Existe ?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [1120, 300],
+      "position": [1780, 300],
       "parameters": {
         "conditions": {
           "boolean": [
-            { "value1": "={{ $json.isNew }}", "value2": true }
+            {
+              "value1": "={{ $json.isNew }}",
+              "value2": true
+            }
           ]
         }
       }
@@ -83,7 +96,7 @@
       "name": "Préparer Données Client",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1340, 180],
+      "position": [2000, 180],
       "parameters": {
         "jsCode": "const emailData = $('Un mail à la fois').first().json;\nreturn [{\n  json: {\n    'Nom': emailData.domaine,\n    'Domaine email': emailData.domaine,\n    'Date création': new Date().toISOString(),\n  },\n}];"
       }
@@ -93,7 +106,7 @@
       "name": "Airtable - Créer Client",
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 1,
-      "position": [1560, 180],
+      "position": [2220, 180],
       "parameters": {
         "authentication": "airtableTokenApi",
         "operation": "append",
@@ -103,7 +116,10 @@
         "options": {}
       },
       "credentials": {
-        "airtableTokenApi": { "id": "2", "name": "Airtable - TechDistri (PAT)" }
+        "airtableTokenApi": {
+          "id": "2",
+          "name": "Airtable - TechDistri (PAT)"
+        }
       }
     },
     {
@@ -111,7 +127,7 @@
       "name": "Normaliser Client Créé",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1780, 180],
+      "position": [2440, 180],
       "parameters": {
         "jsCode": "const created = $input.first().json;\nconst emailData = $('Un mail à la fois').first().json;\nreturn [{\n  json: {\n    clientId: created.id,\n    domaine: emailData.domaine,\n  },\n}];"
       }
@@ -121,7 +137,7 @@
       "name": "Préparer Données Mail",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [2000, 300],
+      "position": [2660, 300],
       "parameters": {
         "jsCode": "const clientInfo = $input.first().json;\nconst emailData = $('Un mail à la fois').first().json;\n\nreturn [{\n  json: {\n    'Sujet': emailData.sujet,\n    'Expéditeur': emailData.expediteur,\n    'Date': emailData.date,\n    'Corps': emailData.corps,\n    'Message-ID': emailData.messageId,\n    'Statut traitement': 'Nouveau',\n    'Client': [clientInfo.clientId],\n  },\n}];"
       }
@@ -131,7 +147,7 @@
       "name": "Airtable - Créer Fiche Mail",
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 1,
-      "position": [2220, 300],
+      "position": [2880, 300],
       "parameters": {
         "authentication": "airtableTokenApi",
         "operation": "append",
@@ -141,7 +157,10 @@
         "options": {}
       },
       "credentials": {
-        "airtableTokenApi": { "id": "2", "name": "Airtable - TechDistri (PAT)" }
+        "airtableTokenApi": {
+          "id": "2",
+          "name": "Airtable - TechDistri (PAT)"
+        }
       }
     },
     {
@@ -153,17 +172,16 @@
       "parameters": {
         "batchSize": 1,
         "options": {}
-      },
-      "notes": "Chaque mail fait tout le parcours, pièces jointes comprises, avant de passer au suivant. Le retour arrive de « Créer Fiche Mail » : placé sous la branche pièces jointes, il s'exécute après elle (ordre v1)."
+      }
     },
     {
       "id": "11",
       "name": "Extraire Pièces Jointes",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [2440, 300],
+      "position": [3100, 300],
       "parameters": {
-        "jsCode": "// Un item en entrée (la fiche Mail créée) -> N items en sortie (un par PJ).\n// Si l'email n'a pas de PJ, binary est vide et aucun item n'est renvoyé :\n// toute la branche s'arrête naturellement ici (cas N=0 géré sans IF).\nconst mailRecord = $input.first().json;\nconst emailData = $('Un mail à la fois').first().json;\nconst binary = $('Un mail à la fois').first().binary || {};\n\n// n8n donne la taille en texte (\"36.3 kB\") : conversion approximative en octets\nconst toBytes = (size) => {\n  const m = String(size || '').match(/([\\d.,]+)\\s*(B|kB|KB|MB|GB)?/);\n  if (!m) return 0;\n  const units = { B: 1, kB: 1e3, KB: 1e3, MB: 1e6, GB: 1e9 };\n  return Math.round(parseFloat(m[1].replace(',', '.')) * (units[m[2]] || 1));\n};\n\nreturn Object.keys(binary).map((key) => {\n  const bin = binary[key];\n  return {\n    json: {\n      mailId: mailRecord.id,\n      domaine: emailData.domaine,\n      fileName: bin.fileName || key,\n      mimeType: bin.mimeType || 'application/octet-stream',\n      fileSize: toBytes(bin.fileSize),\n    },\n    binary: { data: bin },\n  };\n});"
+        "jsCode": "const mailRecord = $input.first().json;\nconst emailData = $('Un mail à la fois').first().json;\nconst binary = $('Un mail à la fois').first().binary || {};\n\nconst toBytes = (size) => {\n  const m = String(size || '').match(/([\\d.,]+)\\s*(B|kB|KB|MB|GB)?/);\n  if (!m) return 0;\n  const units = { B: 1, kB: 1e3, KB: 1e3, MB: 1e6, GB: 1e9 };\n  return Math.round(parseFloat(m[1].replace(',', '.')) * (units[m[2]] || 1));\n};\n\nreturn Object.keys(binary).map((key) => {\n  const bin = binary[key];\n  return {\n    json: {\n      mailId: mailRecord.id,\n      domaine: emailData.domaine,\n      fileName: bin.fileName || key,\n      mimeType: bin.mimeType || 'application/octet-stream',\n      fileSize: toBytes(bin.fileSize),\n    },\n    binary: { data: bin },\n  };\n});"
       }
     },
     {
@@ -172,7 +190,7 @@
       "type": "n8n-nodes-base.googleDrive",
       "executeOnce": true,
       "typeVersion": 3,
-      "position": [2660, 300],
+      "position": [3320, 300],
       "alwaysOutputData": true,
       "parameters": {
         "resource": "fileFolder",
@@ -184,7 +202,10 @@
         "limit": 1
       },
       "credentials": {
-        "googleDriveOAuth2Api": { "id": "4", "name": "Google Drive - TechDistri" }
+        "googleDriveOAuth2Api": {
+          "id": "4",
+          "name": "Google Drive - TechDistri"
+        }
       }
     },
     {
@@ -192,9 +213,9 @@
       "name": "Normaliser Résultat Dossier",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [2880, 300],
+      "position": [3540, 300],
       "parameters": {
-        "jsCode": "// Recherche faite une seule fois par mail (Execute Once) : un seul dossier\n// par client, même quand le mail a plusieurs pièces jointes\nconst found = $input.first().json.id;\nconst domaine = $('Extraire Pièces Jointes').first().json.domaine;\n\nreturn [{\n  json: {\n    domaine,\n    folderExists: !!found,\n    folderId: found || null,\n  },\n}];"
+        "jsCode": "const found = $input.first().json.id;\nconst domaine = $('Extraire Pièces Jointes').first().json.domaine;\n\nreturn [{\n  json: {\n    domaine,\n    folderExists: !!found,\n    folderId: found || null,\n  },\n}];"
       }
     },
     {
@@ -202,11 +223,14 @@
       "name": "Dossier Client Existe ?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [3100, 300],
+      "position": [3760, 300],
       "parameters": {
         "conditions": {
           "boolean": [
-            { "value1": "={{ $json.folderExists }}", "value2": true }
+            {
+              "value1": "={{ $json.folderExists }}",
+              "value2": true
+            }
           ]
         }
       }
@@ -217,16 +241,27 @@
       "type": "n8n-nodes-base.googleDrive",
       "executeOnce": true,
       "typeVersion": 3,
-      "position": [3320, 460],
+      "position": [3980, 460],
       "parameters": {
         "resource": "folder",
         "operation": "create",
         "name": "={{ $json.domaine }}",
-        "driveId": { "__rl": true, "mode": "list", "value": "My Drive" },
-        "folderId": { "__rl": true, "mode": "id", "value": "__GDRIVE_ROOT_FOLDER_ID__" }
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "__GDRIVE_ROOT_FOLDER_ID__"
+        }
       },
       "credentials": {
-        "googleDriveOAuth2Api": { "id": "4", "name": "Google Drive - TechDistri" }
+        "googleDriveOAuth2Api": {
+          "id": "4",
+          "name": "Google Drive - TechDistri"
+        }
       }
     },
     {
@@ -234,7 +269,7 @@
       "name": "Normaliser Dossier Créé",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [3540, 460],
+      "position": [4200, 460],
       "parameters": {
         "jsCode": "const created = $input.first().json;\nconst ctx = $('Normaliser Résultat Dossier').first().json;\n\nreturn [{\n  json: {\n    ...ctx,\n    folderId: created.id,\n  },\n}];"
       }
@@ -244,9 +279,9 @@
       "name": "Préparer Uploads",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [3760, 300],
+      "position": [4420, 300],
       "parameters": {
-        "jsCode": "// Un item par pièce jointe, tous vers le même dossier client\nconst folderId = $input.first().json.folderId;\n\nreturn $('Extraire Pièces Jointes').all().map((pj) => ({\n  json: { ...pj.json, folderId },\n  binary: pj.binary,\n}));"
+        "jsCode": "const folderId = $input.first().json.folderId;\n\nreturn $('Extraire Pièces Jointes').all().map((pj) => ({\n  json: { ...pj.json, folderId },\n  binary: pj.binary,\n}));"
       }
     },
     {
@@ -254,7 +289,7 @@
       "name": "Drive - Upload Fichier",
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
-      "position": [3980, 300],
+      "position": [4640, 300],
       "onError": "continueErrorOutput",
       "retryOnFail": true,
       "maxTries": 3,
@@ -263,13 +298,26 @@
         "resource": "file",
         "operation": "upload",
         "name": "={{ $json.fileName }}",
-        "driveId": { "__rl": true, "mode": "list", "value": "My Drive" },
-        "folderId": { "__rl": true, "mode": "id", "value": "={{ $json.folderId }}" },
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.folderId }}"
+        },
         "inputDataFieldName": "data",
-        "options": { "simplifyOutput": false }
+        "options": {
+          "simplifyOutput": false
+        }
       },
       "credentials": {
-        "googleDriveOAuth2Api": { "id": "4", "name": "Google Drive - TechDistri" }
+        "googleDriveOAuth2Api": {
+          "id": "4",
+          "name": "Google Drive - TechDistri"
+        }
       }
     },
     {
@@ -277,10 +325,10 @@
       "name": "Préparer Données Fichier (Succès)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [4200, 180],
+      "position": [4860, 180],
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const uploaded = $input.item.json;\nconst att = $('Préparer Uploads').item.json;\n\nreturn {\n  json: {\n    'Nom du fichier': att.fileName,\n    'Type MIME': att.mimeType,\n    // taille exacte renvoyée par Drive, sinon l'estimation\n    'Taille (octets)': Number(uploaded.size) || att.fileSize,\n    'URL cloud': uploaded.webViewLink || uploaded.webContentLink || '',\n    \"Date d'arrivée\": new Date().toISOString(),\n    'Statut upload': 'Uploadé',\n    'Erreur': '',\n    'Mail': [att.mailId],\n  },\n};"
+        "jsCode": "const uploaded = $input.item.json;\nconst att = $('Préparer Uploads').item.json;\n\nreturn {\n  json: {\n    'Nom du fichier': att.fileName,\n    'Type MIME': att.mimeType,\n    'Taille (octets)': Number(uploaded.size) || att.fileSize,\n    'URL cloud': uploaded.webViewLink || uploaded.webContentLink || '',\n    \"Date d'arrivée\": new Date().toISOString(),\n    'Statut upload': 'Uploadé',\n    'Erreur': '',\n    'Mail': [att.mailId],\n  },\n};"
       }
     },
     {
@@ -288,10 +336,10 @@
       "name": "Préparer Données Fichier (Échec)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [4200, 420],
+      "position": [4860, 420],
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const erreur = $input.item.json;\nconst att = $('Préparer Uploads').item.json;\n\nreturn {\n  json: {\n    'Nom du fichier': att.fileName,\n    'Type MIME': att.mimeType,\n    'Taille (octets)': att.fileSize,\n    'URL cloud': '',\n    \"Date d'arrivée\": new Date().toISOString(),\n    'Statut upload': 'Échec',\n    // la sortie d'erreur de n8n donne error sous forme de texte\n    'Erreur': (typeof erreur.error === 'string' ? erreur.error : erreur.error && erreur.error.message) || erreur.message || 'Échec upload cloud (raison inconnue)',\n    'Mail': [att.mailId],\n  },\n};"
+        "jsCode": "const erreur = $input.item.json;\nconst att = $('Préparer Uploads').item.json;\n\nreturn {\n  json: {\n    'Nom du fichier': att.fileName,\n    'Type MIME': att.mimeType,\n    'Taille (octets)': att.fileSize,\n    'URL cloud': '',\n    \"Date d'arrivée\": new Date().toISOString(),\n    'Statut upload': 'Échec',\n    'Erreur': (typeof erreur.error === 'string' ? erreur.error : erreur.error && erreur.error.message) || erreur.message || 'Échec upload cloud (raison inconnue)',\n    'Mail': [att.mailId],\n  },\n};"
       }
     },
     {
@@ -299,7 +347,7 @@
       "name": "Airtable - Créer Fiche Fichier",
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 1,
-      "position": [4420, 300],
+      "position": [5080, 300],
       "parameters": {
         "authentication": "airtableTokenApi",
         "operation": "append",
@@ -309,7 +357,10 @@
         "options": {}
       },
       "credentials": {
-        "airtableTokenApi": { "id": "2", "name": "Airtable - TechDistri (PAT)" }
+        "airtableTokenApi": {
+          "id": "2",
+          "name": "Airtable - TechDistri (PAT)"
+        }
       }
     },
     {
@@ -317,7 +368,7 @@
       "name": "Notifier Échec Upload",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2,
-      "position": [4420, 540],
+      "position": [5080, 540],
       "parameters": {
         "fromEmail": "alertes@techdistri.local",
         "toEmail": "demo@techdistri.local",
@@ -326,98 +377,373 @@
         "options": {}
       },
       "credentials": {
-        "smtp": { "id": "3", "name": "SMTP - Serveur Test TechDistri (GreenMail)" }
+        "smtp": {
+          "id": "3",
+          "name": "SMTP - Serveur Test TechDistri (GreenMail)"
+        }
+      }
+    },
+    {
+      "id": "24",
+      "name": "Airtable - Rechercher Mail Existant",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 1,
+      "position": [680, 300],
+      "parameters": {
+        "authentication": "airtableTokenApi",
+        "operation": "list",
+        "application": "__AIRTABLE_BASE_ID__",
+        "table": "Mails",
+        "returnAll": false,
+        "limit": 1,
+        "additionalOptions": {
+          "filterByFormula": "={{ $json.messageId ? '{Message-ID} = \"' + $json.messageId.replace(/\"/g, '') + '\"' : 'FALSE()' }}"
+        }
+      },
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "2",
+          "name": "Airtable - TechDistri (PAT)"
+        }
+      }
+    },
+    {
+      "id": "25",
+      "name": "Vérifier Doublon",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300],
+      "parameters": {
+        "jsCode": "const results = $input.all();\nconst emailData = $('Un mail à la fois').first().json;\nconst estDoublon = !!emailData.messageId && results.length > 0 && !!results[0].json.id;\n\nreturn [{\n  json: {\n    estDoublon,\n    messageId: emailData.messageId,\n    mailExistantId: estDoublon ? results[0].json.id : null,\n  },\n}];"
+      }
+    },
+    {
+      "id": "26",
+      "name": "Mail Déjà Traité ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1120, 300],
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.estDoublon }}",
+              "value2": true
+            }
+          ]
+        }
       }
     }
   ],
   "connections": {
     "IMAP - Mails entrants": {
-      "main": [[{ "node": "Extraire Champs Email", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Extraire Champs Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Extraire Champs Email": {
-      "main": [[{ "node": "Un mail à la fois", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Un mail à la fois",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Un mail à la fois": {
       "main": [
         [],
-        [{ "node": "Airtable - Rechercher Client", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Airtable - Rechercher Mail Existant",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Airtable - Rechercher Client": {
-      "main": [[{ "node": "Vérifier Client Trouvé", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Vérifier Client Trouvé",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Vérifier Client Trouvé": {
-      "main": [[{ "node": "Client Existe ?", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Client Existe ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Client Existe ?": {
       "main": [
-        [{ "node": "Préparer Données Client", "type": "main", "index": 0 }],
-        [{ "node": "Préparer Données Mail", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Préparer Données Client",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Préparer Données Mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Préparer Données Client": {
-      "main": [[{ "node": "Airtable - Créer Client", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Airtable - Créer Client",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Airtable - Créer Client": {
-      "main": [[{ "node": "Normaliser Client Créé", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Normaliser Client Créé",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Normaliser Client Créé": {
-      "main": [[{ "node": "Préparer Données Mail", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Préparer Données Mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Préparer Données Mail": {
-      "main": [[{ "node": "Airtable - Créer Fiche Mail", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Airtable - Créer Fiche Mail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Airtable - Créer Fiche Mail": {
       "main": [
         [
-          { "node": "Extraire Pièces Jointes", "type": "main", "index": 0 },
-          { "node": "Un mail à la fois", "type": "main", "index": 0 }
+          {
+            "node": "Extraire Pièces Jointes",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Un mail à la fois",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
     "Extraire Pièces Jointes": {
-      "main": [[{ "node": "Drive - Chercher Dossier Client", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Drive - Chercher Dossier Client",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Drive - Chercher Dossier Client": {
-      "main": [[{ "node": "Normaliser Résultat Dossier", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Normaliser Résultat Dossier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Normaliser Résultat Dossier": {
-      "main": [[{ "node": "Dossier Client Existe ?", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Dossier Client Existe ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Préparer Uploads": {
-      "main": [[{ "node": "Drive - Upload Fichier", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Drive - Upload Fichier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Dossier Client Existe ?": {
       "main": [
-        [{ "node": "Préparer Uploads", "type": "main", "index": 0 }],
-        [{ "node": "Drive - Créer Dossier Client", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Préparer Uploads",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Drive - Créer Dossier Client",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Drive - Créer Dossier Client": {
-      "main": [[{ "node": "Normaliser Dossier Créé", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Normaliser Dossier Créé",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Normaliser Dossier Créé": {
-      "main": [[{ "node": "Préparer Uploads", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Préparer Uploads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Drive - Upload Fichier": {
       "main": [
-        [{ "node": "Préparer Données Fichier (Succès)", "type": "main", "index": 0 }],
-        [{ "node": "Préparer Données Fichier (Échec)", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Préparer Données Fichier (Succès)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Préparer Données Fichier (Échec)",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Préparer Données Fichier (Succès)": {
-      "main": [[{ "node": "Airtable - Créer Fiche Fichier", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Airtable - Créer Fiche Fichier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Préparer Données Fichier (Échec)": {
       "main": [
         [
-          { "node": "Airtable - Créer Fiche Fichier", "type": "main", "index": 0 },
-          { "node": "Notifier Échec Upload", "type": "main", "index": 0 }
+          {
+            "node": "Airtable - Créer Fiche Fichier",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notifier Échec Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable - Rechercher Mail Existant": {
+      "main": [
+        [
+          {
+            "node": "Vérifier Doublon",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vérifier Doublon": {
+      "main": [
+        [
+          {
+            "node": "Mail Déjà Traité ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mail Déjà Traité ?": {
+      "main": [
+        [
+          {
+            "node": "Un mail à la fois",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Airtable - Rechercher Client",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     }
   },
   "active": false,
-  "settings": { "executionOrder": "v1" },
+  "settings": {
+    "executionOrder": "v1"
+  },
   "pinData": {}
 }

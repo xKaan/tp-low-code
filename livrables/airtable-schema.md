@@ -9,7 +9,7 @@
 | Adresse | Single line text |
 | Contact principal | Single line text |
 | Date création | Date |
-| Nb mails *(Niveau 2)* | Count — compte les enregistrements liés dans `Mails` |
+| Nombre d'emails *(Niveau 2)* | Count — compte les enregistrements liés dans `Mails` |
 | Dernier échange *(Niveau 2)* | Rollup sur `Mails` → champ `Date`, agrégation `MAX(values)` |
 | Nb fichiers *(Niveau 2)* | Rollup sur `Mails` → champ `Nb fichiers`, agrégation `SUM(values)` |
 
@@ -55,7 +55,7 @@ champ `Nb fichiers` de `Mails`.
 3. Dans `Mails`, ajouter le champ **Count** `Nb fichiers` sur le lien
    `Fichiers`.
 4. Dans `Clients`, ajouter :
-   - **Count** `Nb mails` sur le lien `Mails`
+   - **Count** `Nombre d'emails` sur le lien `Mails`
    - **Rollup** `Dernier échange` = `MAX(values)` du champ `Date` de `Mails`
    - **Rollup** `Nb fichiers` = `SUM(values)` du champ `Nb fichiers` de
      `Mails` (rollup de rollup : chaque mail compte ses fichiers, le
