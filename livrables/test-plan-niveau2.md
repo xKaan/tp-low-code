@@ -50,6 +50,53 @@ cascade correctement depuis `Mails.Nb fichiers` ; `Nombre d'emails` et
 `Dernier échange` se mettent à jour pour les 4 clients (y compris Carrasco
 qui n'a pas de PJ mais a bien 1 mail de plus).
 
+## Cas piégeux du jeu de données (Gmail perso, no-reply, citations)
+
+Envoi à la demande : `python3 scripts/send-demo-mails-pj.py gmail1 gmail2 noreply citations`
+
+| Clé | Ce que ça teste | Attendu |
+|---|---|---|
+| `gmail1` + `gmail2` | Deux TPE sur le même domaine grand public (`gmail.test`) | **2 Clients distincts**, identifiés par l'adresse complète (`h.petit.btp@gmail.test`, `mathieu.atelier@gmail.test`), nommés d'après le nom d'affichage. Jamais un client unique `gmail.test` |
+| `noreply` | Expéditeur automatique (`noreply@`, sujet `[AUTO]`, en-tête `Auto-Submitted`) | **Ignoré** : aucune fiche Client ni Mail créée |
+| `citations` | Reply avec citations imbriquées (`> > >`) | Le champ `Corps` ne contient que le message utile ("Merci pour le retour. OK pour ce prix. A. Martin"), sans les citations |
+
+Règles appliquées (nœud `Extraire Champs Email`) :
+- domaines grand public (gmail, wanadoo, hotmail, outlook, yahoo, orange, free, laposte, icloud) → la clé client est l'adresse complète ; sinon le domaine ;
+- no-reply (`noreply`, `no-reply`, `donotreply`, `mailer-daemon`, `postmaster`, `bounce`), sujet commençant par `[AUTO]` ou en-tête `Auto-Submitted` ≠ `no` → mail ignoré ;
+- corps : retrait des lignes citées (`>`), des blocs `Le … a écrit :` / `On … wrote:`, `Message d'origine`, des en-têtes `De/Envoyé/À/Objet` et de la signature (`-- `). Si tout est retiré, le texte brut est conservé ;
+- dossier Drive d'un client grand public : nommé d'après l'adresse complète, pour ne pas mélanger les fichiers de deux clients Gmail.
+
+Choix à défendre : un Gmail perso d'un contact d'un client B2B connu est traité comme un client à part entière (identifié par son adresse), pas rattaché au client B2B.
+
+## Test "nouveau client" (branche `isNew = true`)
+
+`python3 scripts/send-demo-mails-pj.py nouveau-client` envoie 2 mails d'un
+domaine inédit (`nouveau-<timestamp>.test`, différent à chaque lancement) :
+
+| Mail | PJ | Attendu |
+|---|---|---|
+| 1/2 | 0 | `Client Existe ?` → création : **1 fiche Client** `nouveau-….test`, 1 fiche Mail liée |
+| 2/2 | 1 (`demande.pdf`) | Client trouvé (pas de 2e création), 1 fiche Mail liée au même Client, dossier Drive `nouveau-….test` créé, 1 fiche Fichier |
+
+Au final : 1 Client, 2 Mails, 1 Fichier, 1 dossier Drive. Relancer la commande
+crée un nouveau domaine, donc aucun nettoyage n'est nécessaire entre deux essais.
+
+## Test de déduplication (Message-ID)
+
+Vérifie que relancer un mail déjà traité ne crée rien en double.
+
+1. Envoyer le même mail deux fois avec le même `Message-ID` :
+   `python3 scripts/send-demo-mails-pj.py doublon`
+2. Attendre le passage de l'IMAP (ou *Execute workflow*).
+3. Attendu : **1 seule** fiche `Mails` (Message-ID `<test-doublon-1pj@techdistri.local>`),
+   1 seule fiche `Fichiers`, 1 seul upload Drive. La 2e exécution passe par la
+   branche `Mail Déjà Traité ?` = oui et enchaîne sur le mail suivant.
+4. Les envois normaux (`1pj`, `2pj`…) ont chacun un Message-ID unique : ils ne
+   doivent jamais être marqués "déjà traités", même renvoyés plusieurs fois.
+
+Pour rejouer le test, supprimer d'abord la fiche `Mails` au Message-ID
+`<test-doublon-1pj@techdistri.local>` dans Airtable.
+
 ## Simulation d'un échec d'upload (gestion d'erreurs)
 
 Le brief demande explicitement : *"que se passe-t-il si l'upload cloud

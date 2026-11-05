@@ -6,8 +6,15 @@ du jeu de données de démo (scripts/send-demo-mails.py). Les fichiers (PDF, PNG
 CSV) sont générés à la volée, rien à télécharger.
 
 Usage : python3 scripts/send-demo-mails-pj.py [clés...]   (ex : 1pj 5pj, défaut : toutes)
+
+Chaque envoi reçoit un Message-ID unique (un nouvel envoi n'est donc jamais pris
+pour un doublon). Clé spéciale `doublon` : envoie 2 fois le même mail avec le
+même Message-ID, pour tester la déduplication (1 seule fiche Mail attendue).
+Clé spéciale `nouveau-client` : envoie 2 mails d'un domaine jamais vu (généré à
+chaque lancement) : le 1er crée le Client, le 2e doit le réutiliser (1 seul Client).
 """
 import smtplib
+import time
 import struct
 import sys
 import zlib
@@ -98,19 +105,74 @@ MAILS = {
     ),
 }
 
+# Cas piégeux : envoyés uniquement à la demande (pas dans le lot par défaut)
+CAS_PIEGEUX = {
+    # Deux TPE différentes sur le même domaine grand public : 2 clients distincts
+    "gmail1": (
+        "Henri Petit <h.petit.btp@gmail.test>",
+        "Devis rénovation salle de bain",
+        "Bonjour,\n\nPouvez-vous me faire un devis pour une rénovation ?\n\nHenri Petit\nPetit BTP",
+        [],
+    ),
+    "gmail2": (
+        "Mathieu Atelier <mathieu.atelier@gmail.test>",
+        "Demande de prix – outillage",
+        "Bonjour,\n\nJe souhaite un prix sur une perceuse à colonne.\n\nMathieu\nAtelier Mathieu",
+        [],
+    ),
+    # Expéditeur automatique : doit être ignoré (ni Client ni Mail)
+    "noreply": (
+        "TechDistri Notif <noreply@techdistri-portail.test>",
+        "[AUTO] Récapitulatif quotidien commandes",
+        "Ceci est un email automatique.\n\nNe pas répondre à cet email.",
+        [],
+    ),
+    # Reply avec citations profondes : seul le message utile doit être gardé
+    "citations": (
+        "Antoine Martin <a.martin@construc-tech.test>",
+        "Re: Re: Re: Devis DV-2026-0145 - questions",
+        "Bonjour,\n\nMerci pour le retour. OK pour ce prix.\n\nA. Martin\n\n"
+        "> Le 14/03/2026, TechDistri a écrit :\n"
+        "> Bonjour M. Martin, voici notre meilleure offre : remise 8%.\n"
+        ">\n"
+        "> > Le 13/03/2026, vous avez écrit :\n"
+        "> > Pouvez-vous faire un geste sur le prix ?\n"
+        "> >\n"
+        "> > > Le 12/03/2026, TechDistri a écrit :\n"
+        "> > > Bonjour, voici le devis joint.\n",
+        [],
+    ),
+}
+MAILS_PAR_CLE = {**MAILS, **CAS_PIEGEUX}
+
 cles = sys.argv[1:] or list(MAILS)
+MESSAGE_ID_DOUBLON = "<test-doublon-1pj@techdistri.local>"
 
 with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as smtp:
     for cle in cles:
-        expediteur, sujet, corps, pieces = MAILS[cle]
-        msg = EmailMessage()
-        msg["From"] = expediteur
-        msg["To"] = DESTINATAIRE
-        msg["Subject"] = sujet
-        msg["Message-ID"] = make_msgid(domain="techdistri.test")
-        msg.set_content(corps)
-        for nom, mime, contenu in pieces:
-            principal, secondaire = mime.split("/")
-            msg.add_attachment(contenu, maintype=principal, subtype=secondaire, filename=nom)
-        smtp.send_message(msg)
-        print(f"{cle} envoyé : {expediteur} → {sujet} ({len(pieces)} PJ)")
+        # `doublon` = le mail 1pj envoyé 2 fois avec le même Message-ID
+        envois = [("1pj", MESSAGE_ID_DOUBLON)] * 2 if cle == "doublon" else [(cle, None)]
+        if cle == "nouveau-client":
+            # domaine unique par lancement : garantit la branche "Client à créer"
+            domaine = f"nouveau-{int(time.time())}.test"
+            envois = [(("nc1", domaine), None), (("nc2", domaine), None)]
+        for vraie_cle, message_id in envois:
+            if isinstance(vraie_cle, tuple):
+                numero, domaine = vraie_cle
+                expediteur = f"Contact Achats <achats@{domaine}>"
+                sujet = f"Demande de devis ({numero[-1]}/2) - {domaine}"
+                corps = f"Bonjour,\n\nMerci de nous faire un devis.\n\nCordialement,\n{domaine}"
+                pieces = [] if numero == "nc1" else [("demande.pdf", "application/pdf", pdf(f"Demande {domaine}"))]
+            else:
+                expediteur, sujet, corps, pieces = MAILS_PAR_CLE[vraie_cle]
+            msg = EmailMessage()
+            msg["From"] = expediteur
+            msg["To"] = DESTINATAIRE
+            msg["Subject"] = sujet
+            msg["Message-ID"] = message_id or make_msgid(domain="techdistri.local")
+            msg["Message-ID"] = make_msgid(domain="techdistri.test")msg.set_content(corps)
+            for nom, mime, contenu in pieces:
+                principal, secondaire = mime.split("/")
+                msg.add_attachment(contenu, maintype=principal, subtype=secondaire, filename=nom)
+            smtp.send_message(msg)
+            print(f"{cle} envoyé : {expediteur} → {sujet} ({len(pieces)} PJ) {msg['Message-ID']}")
