@@ -13,6 +13,7 @@ vers le cloud et formules de synthèse en cascade dans la table `Clients`.
 - [`livrables/test-plan-niveau2.md`](livrables/test-plan-niveau2.md) — jeu de test niveau 2 (PJ, erreurs)
 - [`livrables/dashboard.md`](livrables/dashboard.md) — vues de consultation
 - [`livrables/tuto-google-drive.md`](livrables/tuto-google-drive.md) — tuto de configuration Google Drive (OAuth, dossier racine)
+- [`livrables/note-roi.md`](livrables/note-roi.md) — note ROI (temps gagné, risques couverts, coût d'exploitation)
 
 ## Mise en service
 
