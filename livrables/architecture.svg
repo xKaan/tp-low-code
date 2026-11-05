@@ -1,0 +1,197 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="850" viewBox="0 40 1500 850" role="img" font-family="Arial, Helvetica, sans-serif" font-size="13" aria-label="Architecture TechDistri : les emails arrivent en SMTP dans GreenMail (Docker) ; n8n les relève en IMAP toutes les 5 minutes, ignore ceux déjà en base, retrouve ou crée le client, crée la fiche Mail, puis pour chaque pièce jointe crée le dossier client sur Google Drive, uploade le fichier et crée la fiche Fichier dans Airtable ; en cas d'échec il crée une fiche Échec et envoie une alerte. L'équipe consulte Airtable en lecture seule.">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#333333"/></marker>
+    <marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#B85450"/></marker>
+  </defs>
+  <rect y="40" width="1500" height="850" fill="#FFFFFF"/>
+
+
+  <!-- Clients -->
+  <rect x="20" y="130" width="130" height="70" fill="#FFFFFF" stroke="#333333"/>
+  <text x="85" y="160" text-anchor="middle" font-weight="bold" fill="#222222">Clients</text>
+  <text x="85" y="178" text-anchor="middle" font-size="11" fill="#555555">(scripts de démo)</text>
+  <text x="85" y="222" text-anchor="middle" font-size="11" fill="#555555">en prod : Gmail</text>
+  <line x1="150" y1="165" x2="198" y2="165" stroke="#333333" stroke-width="1.3" marker-end="url(#a)"/>
+  <text x="174" y="157" text-anchor="middle" font-size="11" fill="#333333">SMTP</text>
+
+  <!-- ============ Docker ============ -->
+  <rect x="170" y="50" width="1310" height="500" rx="6" fill="none" stroke="#1D63ED" stroke-width="1.5" stroke-dasharray="7 5"/>
+  <text x="186" y="72" font-weight="bold" fill="#1D63ED">Docker – docker-compose.yml</text>
+
+  <!-- GreenMail -->
+  <rect x="200" y="130" width="160" height="70" fill="#FFF2CC" stroke="#D6B656"/>
+  <text x="280" y="160" text-anchor="middle" font-weight="bold" fill="#222222">GreenMail</text>
+  <text x="280" y="178" text-anchor="middle" font-size="11" fill="#333333">SMTP 3025 / IMAP 3143</text>
+
+  <!-- Roundcube -->
+  <rect x="200" y="290" width="160" height="56" fill="#FFF2CC" stroke="#D6B656"/>
+  <text x="280" y="314" text-anchor="middle" font-weight="bold" fill="#222222">Roundcube</text>
+  <text x="280" y="332" text-anchor="middle" font-size="11" fill="#333333">webmail :8025</text>
+  <line x1="280" y1="290" x2="280" y2="202" stroke="#333333" stroke-width="1.3" marker-end="url(#a)"/>
+  <text x="288" y="250" font-size="11" fill="#333333">IMAP</text>
+
+  <!-- n8n -->
+  <rect x="400" y="80" width="1060" height="450" rx="6" fill="#F5F5F5" stroke="#666666"/>
+  <text x="414" y="102" font-weight="bold" fill="#222222">n8n – localhost:5678</text>
+  <text x="414" y="120" font-size="11" fill="#555555">credentials : IMAP, Airtable (token), Google Drive (OAuth2), SMTP – une exécution à la fois</text>
+
+  <!-- GreenMail -> déclencheur -->
+  <path d="M360,165 H392 V180 H428" fill="none" stroke="#333333" stroke-width="1.3" marker-end="url(#a)"/>
+
+  <!-- Ligne 1 -->
+  <rect x="430" y="156" width="130" height="48" rx="24" fill="#FFFFFF" stroke="#333333"/>
+  <text x="495" y="176" text-anchor="middle" fill="#222222">IMAP</text>
+  <text x="495" y="193" text-anchor="middle" font-size="11" fill="#555555">toutes les 5 min</text>
+  <line x1="560" y1="180" x2="588" y2="180" stroke="#333333" stroke-width="1.3" marker-end="url(#a)"/>
+
+  <rect x="590" y="156" width="150" height="48" fill="#FFFFFF" stroke="#333333"/>
+  <text x="665" y="176" text-anchor="middle" fill="#222222">Lire l'expéditeur</text>
+  <text x="665" y="193" text-anchor="middle" font-size="11" fill="#555555">domaine, Message-ID</text>
+  <line x1="740" y1="180" x2="758" y2="180" stroke="#333333" stroke-width="1.3" marker-end="url(#a)"/>
+
+  <polygon points="760,180 830,140 900,180 830,220" fill="#DAE8FC" stroke="#6C8EBF"/>
+  <text x="830" y="177" text-anchor="middle" font-size="12" fill="#222222">Déjà en</text>
+  <text x="830" y="192" text-anchor="middle" font-size="12" fill="#222222">base ?</text>
+  <line x1="900" y1="180" x2="938" y2="180" stroke="#333333" stroke-width="1.3" marker-end="url(#a)"/>
+  <text x="919" y="172" text-anchor="middle" font-size="11" fill="#333333">non</text>
+  <line x1="830" y1="220" x2="830" y2="258" stroke="#333333" stroke-width="1.3" marker-end="url(#a)"/>
+  <text x="838" y="243" font-size="11" fill="#333333">oui</text>
+  <rect x="780" y="260" width="100" height="32" rx="16" fill="#FFFFFF" stroke="#333333"/>
+  <text x="830" y="280" text-anchor="middle" font-size="12" fill="#222222">ignoré</text>
+
+  <rect x="940" y="156" width="150" height="48" fill="#DAE8FC" stroke="#6C8EBF"/>
+  <text x="1015" y="176" text-anchor="middle" fill="#222222">Chercher le client</text>
+  <text x="1015" y="193" text-anchor="middle" font-size="11" fill="#555555">créé s'il n'existe pas</text>
+  <line x1="1090" y1="180" x2="1128" y2="180" stroke="#333333" stroke-width="1.3" marker-end="url(#a)"/>
+
+  <rect x="1130" y="156" width="140" height="48" fill="#DAE8FC" stroke="#6C8EBF"/>
+  <text x="1200" y="185" text-anchor="middle" fill="#222222">Créer la fiche Mail</text>
+  <line x1="1200" y1="204" x2="1200" y2="318" stroke="#333333" stroke-width="1.3" marker-end="url(#a)"/>
+
+  <!-- Ligne 2 (droite vers gauche) -->
+  <polygon points="1150,360 1200,320 1250,360 1200,400" fill="#FFFFFF" stroke="#333333"/>
+  <text x="1200" y="365" text-anchor="middle" font-size="12" fill="#222222">PJ ?</text>
+  <line x1="1250" y1="360" x2="1298" y2="360" stroke="#333333" stroke-width="1.3" marker-end="url(#a)"/>
+  <text x="1274" y="352" text-anchor="middle" font-size="11" fill="#333333">non</text>
+  <rect x="1300" y="344" width="70" height="32" rx="16" fill="#FFFFFF" stroke="#333333"/>
+  <text x="1335" y="364" text-anchor="middle" font-size="12" fill="#222222">fin</text>
+  <line x1="1150" y1="360" x2="1092" y2="360" stroke="#333333" stroke-width="1.3" marker-end="url(#a)"/>
+  <text x="1121" y="352" text-anchor="middle" font-size="11" fill="#333333">oui</text>
+  <text x="1121" y="378" text-anchor="middle" font-size="10" fill="#555555">chaque PJ</text>
+
+  <rect x="940" y="336" width="150" height="48" fill="#D5E8D4" stroke="#82B366"/>
+  <text x="1015" y="356" text-anchor="middle" fill="#222222">Dossier du client</text>
+  <text x="1015" y="373" text-anchor="middle" font-size="11" fill="#555555">cherché ou créé</text>
+  <line x1="940" y1="360" x2="902" y2="360" stroke="#333333" stroke-width="1.3" marker-end="url(#a)"/>
+
+  <rect x="750" y="336" width="150" height="48" fill="#D5E8D4" stroke="#82B366"/>
+  <text x="825" y="356" text-anchor="middle" fill="#222222">Upload Drive</text>
+  <text x="825" y="373" text-anchor="middle" font-size="11" fill="#555555">3 essais</text>
+  <line x1="750" y1="360" x2="712" y2="360" stroke="#333333" stroke-width="1.3" marker-end="url(#a)"/>
+
+  <polygon points="610,360 660,320 710,360 660,400" fill="#FFFFFF" stroke="#333333"/>
+  <text x="660" y="365" text-anchor="middle" font-size="12" fill="#222222">OK ?</text>
+  <line x1="610" y1="360" x2="582" y2="360" stroke="#333333" stroke-width="1.3" marker-end="url(#a)"/>
+  <text x="596" y="352" text-anchor="middle" font-size="11" fill="#333333">oui</text>
+
+  <rect x="430" y="336" width="150" height="48" fill="#DAE8FC" stroke="#6C8EBF"/>
+  <text x="505" y="356" text-anchor="middle" fill="#222222">Fiche Fichier</text>
+  <text x="505" y="373" text-anchor="middle" font-size="11" fill="#555555">statut Uploadé</text>
+
+  <line x1="660" y1="400" x2="660" y2="438" stroke="#B85450" stroke-width="1.3" marker-end="url(#r)"/>
+  <text x="668" y="424" font-size="11" fill="#B85450">non</text>
+  <rect x="585" y="440" width="150" height="48" fill="#F8CECC" stroke="#B85450"/>
+  <text x="660" y="460" text-anchor="middle" fill="#222222">Fiche Échec</text>
+  <text x="660" y="477" text-anchor="middle" font-size="11" fill="#555555">+ mail d'alerte</text>
+
+  <!-- alerte -> GreenMail -->
+  <path d="M585,464 H384 V190 H362" fill="none" stroke="#B85450" stroke-width="1.3" stroke-dasharray="5 3" marker-end="url(#r)"/>
+  <text x="376" y="330" text-anchor="middle" font-size="11" fill="#B85450" transform="rotate(-90 376 330)">alerte SMTP</text>
+
+  <!-- volume -->
+  <path d="M1335,452 v52 a55,9 0 0 0 110,0 v-52" fill="#FFFFFF" stroke="#666666"/>
+  <ellipse cx="1390" cy="452" rx="55" ry="9" fill="#FFFFFF" stroke="#666666"/>
+  <text x="1390" y="482" text-anchor="middle" font-size="12" fill="#222222">n8n_data</text>
+  <text x="1390" y="498" text-anchor="middle" font-size="10" fill="#555555">volume</text>
+
+  <!-- ============ Services en ligne ============ -->
+  <rect x="400" y="590" width="1080" height="290" rx="6" fill="none" stroke="#999999" stroke-dasharray="7 5"/>
+  <text x="414" y="612" font-weight="bold" fill="#555555">Services en ligne</text>
+
+  <!-- n8n -> Airtable / Drive -->
+  <line x1="640" y1="532" x2="640" y2="628" stroke="#333333" stroke-width="1.3" marker-start="url(#a)" marker-end="url(#a)"/>
+  <text x="650" y="584" font-size="11" fill="#333333">API Airtable (token)</text>
+  <line x1="1015" y1="386" x2="1015" y2="628" stroke="#333333" stroke-width="1.3" marker-end="url(#a)"/>
+  <text x="1025" y="584" font-size="11" fill="#333333">API Drive (OAuth2)</text>
+
+  <!-- Airtable -->
+  <rect x="430" y="630" width="470" height="230" fill="#FFFFFF" stroke="#6C8EBF"/>
+  <rect x="430" y="630" width="470" height="28" fill="#DAE8FC" stroke="#6C8EBF"/>
+  <text x="444" y="649" font-weight="bold" fill="#222222">Airtable – base Low-Code</text>
+
+  <g font-size="11" fill="#222222">
+    <rect x="450" y="676" width="130" height="140" fill="#FFFFFF" stroke="#6C8EBF"/>
+    <rect x="450" y="676" width="130" height="24" fill="#DAE8FC" stroke="#6C8EBF"/>
+    <text x="515" y="693" text-anchor="middle" font-size="12" font-weight="bold">Clients</text>
+    <text x="458" y="718">Nom</text>
+    <text x="458" y="736">Domaine email</text>
+    <text x="458" y="754">Nombre d'emails *</text>
+    <text x="458" y="772">Dernier échange *</text>
+    <text x="458" y="790">Nb fichiers *</text>
+
+    <rect x="600" y="676" width="130" height="140" fill="#FFFFFF" stroke="#6C8EBF"/>
+    <rect x="600" y="676" width="130" height="24" fill="#DAE8FC" stroke="#6C8EBF"/>
+    <text x="665" y="693" text-anchor="middle" font-size="12" font-weight="bold">Mails</text>
+    <text x="608" y="718">Sujet, Expéditeur</text>
+    <text x="608" y="736">Date, Corps</text>
+    <text x="608" y="754">Message-ID</text>
+    <text x="608" y="772">Client →</text>
+    <text x="608" y="790">Nb fichiers *</text>
+
+    <rect x="750" y="676" width="130" height="140" fill="#FFFFFF" stroke="#6C8EBF"/>
+    <rect x="750" y="676" width="130" height="24" fill="#DAE8FC" stroke="#6C8EBF"/>
+    <text x="815" y="693" text-anchor="middle" font-size="12" font-weight="bold">Fichiers</text>
+    <text x="758" y="718">Nom, Type, Taille</text>
+    <text x="758" y="736">URL cloud</text>
+    <text x="758" y="754">Statut upload</text>
+    <text x="758" y="772">Erreur</text>
+    <text x="758" y="790">Mail →</text>
+  </g>
+  <line x1="600" y1="768" x2="582" y2="768" stroke="#333333" stroke-width="1.2" marker-end="url(#a)"/>
+  <line x1="750" y1="786" x2="732" y2="786" stroke="#333333" stroke-width="1.2" marker-end="url(#a)"/>
+  <text x="450" y="840" font-size="11" fill="#555555">* champ calculé par Airtable (comptage / cumul)</text>
+
+  <!-- Google Drive -->
+  <rect x="940" y="630" width="250" height="140" fill="#FFFFFF" stroke="#82B366"/>
+  <rect x="940" y="630" width="250" height="28" fill="#D5E8D4" stroke="#82B366"/>
+  <text x="954" y="649" font-weight="bold" fill="#222222">Google Drive</text>
+  <g font-family="Courier New, monospace" font-size="12" fill="#222222">
+    <text x="954" y="682">TechDistri - Pièces jointes/</text>
+    <text x="954" y="702">  ind-garcia.test/</text>
+    <text x="954" y="720">    BC-26012.pdf</text>
+    <text x="954" y="740">  hydro-sud.test/</text>
+    <text x="954" y="758">    ...</text>
+  </g>
+
+  <!-- Consultation -->
+  <path d="M900,800 H1212 V680 H1228" fill="none" stroke="#333333" stroke-width="1.3" marker-end="url(#a)"/>
+  <rect x="1230" y="630" width="230" height="100" fill="#FFFFFF" stroke="#9673A6"/>
+  <rect x="1230" y="630" width="230" height="28" fill="#E1D5E7" stroke="#9673A6"/>
+  <text x="1244" y="649" font-weight="bold" fill="#222222">Consultation</text>
+  <text x="1244" y="682" fill="#222222">Interface Dashboard</text>
+  <text x="1244" y="702" fill="#222222">+ 5 vues Airtable</text>
+  <line x1="1345" y1="730" x2="1345" y2="768" stroke="#333333" stroke-width="1.3" marker-end="url(#a)"/>
+  <text x="1353" y="754" font-size="11" fill="#333333">lecture seule</text>
+  <rect x="1230" y="770" width="230" height="60" fill="#FFFFFF" stroke="#333333"/>
+  <text x="1345" y="796" text-anchor="middle" fill="#222222">Commerciaux (5)</text>
+  <text x="1345" y="814" text-anchor="middle" fill="#222222">Direction (1)</text>
+
+  <!-- Légende -->
+  <g font-size="11" fill="#333333">
+    <text x="20" y="640" font-weight="bold">Légende</text>
+    <rect x="20" y="652" width="22" height="14" fill="#FFF2CC" stroke="#D6B656"/><text x="50" y="663">messagerie</text>
+    <rect x="20" y="674" width="22" height="14" fill="#DAE8FC" stroke="#6C8EBF"/><text x="50" y="685">écrit dans Airtable</text>
+    <rect x="20" y="696" width="22" height="14" fill="#D5E8D4" stroke="#82B366"/><text x="50" y="707">Google Drive</text>
+    <rect x="20" y="718" width="22" height="14" fill="#F8CECC" stroke="#B85450"/><text x="50" y="729">erreur</text>
+  </g>
+</svg>
