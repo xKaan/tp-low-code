@@ -6,6 +6,7 @@ vers le cloud et formules de synthèse en cascade dans la table `Clients`.
 
 ## Livrables
 
+- [`livrables/README.md`](livrables/README.md) — **démarrage rapide** : lancer le workflow de zéro en quelques étapes
 - [`livrables/airtable-schema.md`](livrables/airtable-schema.md) — schéma Airtable (3 tables + cascade)
 - [`livrables/techdistri-niveau1.json`](livrables/techdistri-niveau1.json) — workflow n8n niveau 1 (archivé, toujours valide)
 - [`livrables/techdistri-niveau2.json`](livrables/techdistri-niveau2.json) — workflow n8n niveau 2 (à importer, remplace le niveau 1 en usage)
