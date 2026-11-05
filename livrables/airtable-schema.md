@@ -42,6 +42,7 @@ automatiquement le champ inverse `Mails` dans `Clients`.
 | Statut upload | Single select (`Uploadé`, `Échec`) |
 | Erreur | Long text (vide si succès, message d'erreur sinon) |
 | Mail | Link to `Mails` |
+| Client | Lookup — `Mail` → `Client` (affichage seulement, pour grouper les fichiers par client) |
 
 Créer `Fichiers` après `Mails` : le champ `Mail` (link) génère
 automatiquement le champ inverse `Fichiers` dans `Mails`, nécessaire au

@@ -2,72 +2,68 @@
 
 Objectif du brief : permettre à l'équipe commerciale (5 personnes) et à la
 direction (1 personne) de consulter la base **sans écrire dans Airtable**.
-Solution retenue : des vues Airtable dédiées à la consultation (grid views en
-lecture, partagées en lien public "en lecture seule"), pas de nouvel outil
-(Softr) — suffisant pour la démo et sans coût ni compte supplémentaire.
 
-## Vues à créer
+Deux niveaux de consultation, tous deux dans Airtable (pas d'outil
+supplémentaire, pas de coût) :
 
-### Table `Clients` — vue `Dashboard Clients`
+1. **Interface `TechDistri - Dashboard`** (Airtable Interface Designer) :
+   le dashboard principal, en lecture seule.
+2. **Vues de consultation** dans chaque table, partageables en lien
+   lecture seule.
 
-- Tri : `Dernier échange` décroissant (les clients les plus récemment actifs
-  en haut)
-- Colonnes visibles, dans l'ordre : `Nom`, `Domaine email`, `Nombre d'emails`,
-  `Nb fichiers`, `Dernier échange`, `Contact principal`
-- Filtre : aucun (vue globale) — sert de point d'entrée "quel client a
-  bougé récemment, combien de documents lui sont rattachés"
+## Interface `TechDistri - Dashboard`
 
-### Table `Mails` — vue `Recherche par client`
+Onglet **Interfaces** de la base. Quatre pages, toutes en lecture seule
+(actions « Modifier / Ajouter / Supprimer les entrées » désactivées sur
+chaque liste).
 
-- Groupement : par `Client`
-- Tri intra-groupe : `Date` décroissant
-- Colonnes visibles : `Sujet`, `Date`, `Expéditeur`, `Statut traitement`,
-  `Nb fichiers`
-- Répond au besoin du brief "retrouver le dernier devis envoyé à Carrasco" :
-  ouvrir le groupe du client, le mail le plus récent est en tête.
+### Page `Vue d'ensemble`
 
-### Table `Mails` — vue `Recherche par période`
+- Indicateurs : nombre de **Clients**, de **Mails**, de **Fichiers** et de
+  **Fichiers en échec** (`Statut upload` = `Échec`)
+- Graphique en barres **Mails par client**
+- Graphique **Fichiers par type MIME**
+- Liste **Mails les plus récents** (Sujet, Expéditeur, Date, Client), triée
+  par date décroissante
 
-- Tri : `Date` décroissant (vue plate, pas de groupement)
-- Filtre optionnel activable par l'utilisateur dans l'UI Airtable (bouton
-  Filtrer dispo même sur un lien partagé en lecture) sur `Date`
-- Colonnes visibles : `Date`, `Client`, `Sujet`, `Statut traitement`
+### Page `Clients`
 
-### Table `Fichiers` — vue `Documents par client`
+- Liste triée par `Dernier échange` décroissant : `Nom`, `Domaine email`,
+  `Nombre d'emails`, `Nb fichiers`, `Dernier échange`
+- Clic sur un client → page détail avec ses mails et leurs fichiers
 
-- Groupement : par `Mail` → `Client` n'étant pas un lien direct de
-  `Fichiers` (cf. [`airtable-schema.md`](airtable-schema.md), cascade
-  volontaire), grouper par le champ lookup `Client` ajouté en complément
-  (lookup simple depuis `Mail`, pas un lien — ne casse pas le modèle à 3
-  tables du brief, juste un champ d'affichage)
-- Colonnes visibles : `Nom du fichier`, `Type MIME`, `URL cloud`,
+### Page `Mails`
+
+- Liste groupée par `Client`, triée par `Date` décroissante
+- Menus déroulants de filtre par **Client** et par **Date** (recherche par
+  client et par période demandée par le brief)
+- Répond au besoin « retrouver le dernier devis envoyé à Carrasco » : filtrer
+  sur le client, le mail le plus récent est en tête.
+
+### Page `Fichiers`
+
+- Liste groupée par `Client` : `Nom du fichier`, `Type MIME`, `URL cloud`,
   `Statut upload`, `Date d'arrivée`
-- Filtre : `Statut upload` ≠ vide (exclut les lignes en cours de
-  traitement s'il y en a)
-- Un clic sur `URL cloud` ouvre le fichier dans Drive — c'est la
-  "recherche instantanée" demandée par le brief.
+- Un clic sur `URL cloud` ouvre le fichier dans Drive.
 
-### Table `Fichiers` — vue `Échecs upload` (support / suivi d'erreurs)
+## Vues de consultation (tables)
 
-- Filtre : `Statut upload` = `Échec`
-- Colonnes visibles : `Nom du fichier`, `Mail`, `Erreur`, `Date d'arrivée`
-- Vue de contrôle pour l'équipe : liste tout ce qui doit être ré-uploadé
-  manuellement (cf. [`README.md`](../README.md#gestion-derreurs) et le
-  mail d'alerte envoyé par le nœud `Notifier Échec Upload`).
+| Table | Vue | Configuration |
+|---|---|---|
+| `Clients` | `Dashboard Clients` | Tri `Dernier échange` décroissant ; colonnes `Nom`, `Domaine email`, `Contact principal`, `Nombre d'emails`, `Dernier échange`, `Nb fichiers` |
+| `Mails` | `Recherche par client` | Groupé par `Client`, tri `Date` décroissant ; colonnes `Sujet`, `Expéditeur`, `Date`, `Statut traitement`, `Fichiers`, `Nb fichiers` |
+| `Mails` | `Recherche par période` | Vue plate, tri `Date` décroissant ; colonnes `Sujet`, `Expéditeur`, `Date`, `Statut traitement`, `Client`, `Nb fichiers` |
+| `Fichiers` | `Documents par client` | Groupé par `Client` ; colonnes `Nom du fichier`, `Type MIME`, `URL cloud`, `Date d'arrivée`, `Statut upload`, `Mail` |
+| `Fichiers` | `Échecs upload` | Filtre `Statut upload` = `Échec` — liste ce qui doit être ré-uploadé à la main (cf. [`README.md`](../README.md#gestion-derreurs)) |
+
+`Fichiers` n'est pas lié directement à `Clients` (cf.
+[`airtable-schema.md`](airtable-schema.md)) : le groupement par client
+utilise un champ **Recherche** `Client` (lookup `Mail` → `Client`), un simple
+champ d'affichage qui ne change pas le modèle à 3 tables.
 
 ## Partage
 
-Pour chaque vue listée ci-dessus : bouton **Share view** → **Create a
-shareable link for this view** → lecture seule (les utilisateurs ne
-peuvent pas éditer depuis ce lien). Distribuer les 5 liens à l'équipe
-commerciale et à la direction — pas de siège Airtable payant nécessaire
-pour eux.
-
-## Alternative Softr (si plus de temps)
-
-Si le groupe veut aller au-delà d'un lien Airtable partagé : brancher
-[Softr](https://www.softr.io/) sur la base (connecteur natif Airtable),
-créer une page "Liste des clients" (source = vue `Dashboard Clients`) avec
-une page de détail affichant les mails et fichiers liés. Non nécessaire
-pour valider les critères du niveau 2, mais rend la soutenance plus
-convaincante si le temps le permet.
+- **Interface** : bouton **Publier**, puis **Partager l'interface** et
+  inviter l'équipe avec un rôle lecture seule.
+- **Vues** : **Partager et synchroniser** → lien partagé de la vue, en
+  lecture seule — pas de siège Airtable nécessaire pour le consulter.
